@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Productos en Tiempo Real</title>
+</head>
+<body>
+    <h1>Listado de Productos en Tiempo Real</h1>
+    <ul id="productList">
+        {{#each products}}
+        <li>
+            <h3>{{title}}</h3>
+            <p>{{description}}</p>
+            <p>Precio: {{price}}</p>
+        </li>
+        {{/each}}
+    </ul>
+
+    <form id="productForm">
+        <input type="text" id="title" placeholder="Título">
+        <input type="text" id="description" placeholder="Descripción">
+        <input type="number" id="price" placeholder="Precio">
+        <button type="submit">Agregar Producto</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Conexión con el servidor de websockets
+        const socket = io();
+
+        // Escucha eventos de actualización de productos
+        socket.on('productAdded', function(product) {
+            // Agregar producto a la lista
+            const productItem = `
+                <li>
+                    <h3>${product.title}</h3>
+                    <p>${product.description}</p>
+                    <p>Precio: ${product.price}</p>
+                </li>
+            `;
+            document.getElementById('productList').innerHTML += productItem;
+        });
+
+        socket.on('productDeleted', function(productId) {
+            // Eliminar producto de la lista
+            const productItem = document.querySelector(`li[data-id="${productId}"]`);
+            if (productItem) {
+                productItem.remove();
+            }
+        });
+
+        // Envío de formulario por websockets
+        const productForm = document.getElementById('productForm');
+        productForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const price = document.getElementById('price').value;
+            const product = { title, description, price };
+
+            // Enviar producto al servidor por websockets
+            socket.emit('addProduct', product);
+
+            // Limpiar formulario
+            document.getElementById('title').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('price').value = '';
+        });
+    </script>
+</body>
+</html>

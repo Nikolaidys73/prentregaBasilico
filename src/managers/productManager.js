@@ -1,67 +1,40 @@
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import path from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const productsFile = path.join(__dirname, '../data/productos.json');
 
-const getAllProducts = () => {
-  const productsData = fs.readFileSync(productsFile, 'utf8');
-  return JSON.parse(productsData);
-};
+let products = [];
 
-const getProductById = (pid) => {
-  const products = getAllProducts();
-  return products.find((product) => product.id === pid);
-};
+function getAllProducts() {
+  return products;
+}
 
-const addProduct = (product) => {
-  const products = getAllProducts();
-  const newProduct = { ...product, id: generateId() };
-  products.push(newProduct);
-  saveProducts(products);
-  return newProduct;
-};
+function getProductById(id) {
+  return products.find((product) => product.id === id);
+}
 
-const updateProduct = (pid, updatedProduct) => {
-  const products = getAllProducts();
-  const productIndex = products.findIndex((product) => product.id === pid);
-  if (productIndex !== -1) {
-    products[productIndex] = { ...products[productIndex], ...updatedProduct };
-    saveProducts(products);
-    return products[productIndex];
+function addProduct(product) {
+  products.push(product);
+}
+
+function updateProduct(id, updatedProduct) {
+  const index = products.findIndex((product) => product.id === id);
+
+  if (index !== -1) {
+    products[index] = { ...products[index], ...updatedProduct };
+    return products[index];
   }
+
   return null;
-};
+}
 
-const deleteProduct = (pid) => {
-  const products = getAllProducts();
-  const updatedProducts = products.filter((product) => product.id !== pid);
-  saveProducts(updatedProducts);
-};
+function deleteProduct(id) {
+  const index = products.findIndex((product) => product.id === id);
 
-const generateId = () => {
-  const products = getAllProducts();
-  const ids = products.map((product) => product.id);
-  let newId;
-  do {
-    newId = Math.floor(Math.random() * 1000);
-  } while (ids.includes(newId));
-  return newId;
-};
+  if (index !== -1) {
+    const product = products[index];
+    products.splice(index, 1);
+    return product;
+  }
 
-const saveProducts = (products) => {
-  const productsData = JSON.stringify(products, null, 2);
-  fs.writeFileSync(productsFile, productsData);
-};
+  return null;
+}
 
-const productManager = {
-  getAllProducts,
-  getProductById,
-  addProduct,
-  updateProduct,
-  deleteProduct,
-};
-
-export default productManager;
+export default { getAllProducts, getProductById, addProduct, updateProduct, deleteProduct };
